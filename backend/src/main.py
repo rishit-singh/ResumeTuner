@@ -1,10 +1,19 @@
 import os
 import sys
-from ReplicateBot import ReplicateBot
+import json
+import threading
+
+from ReplicateBot import ReplicateBot, Message
 
 bot = ReplicateBot("mistralai/mixtral-8x7b-instruct-v0.1", os.getenv("REPLICATEKEY"))
 
-bot.Prompt(sys.argv[1])
-bot.Run()
+bot.Prompt(Message("user", sys.argv[1]))
 
-print(bot.Results)
+def Main():
+    bot.Run()
+
+t = threading.Thread(target=Main)
+t.run()
+
+while (True):
+    print(bot.States[-1].Result)
