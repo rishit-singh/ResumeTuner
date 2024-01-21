@@ -1,0 +1,7 @@
+requests
+replicate
+
+uvicorn
+python-dotenv
+python-multipart
+PyMuPDF

@@ -1,7 +1,9 @@
 import replicate
 import requests
-from typing import Any
+from typing import Any, Callable
 import asyncio
+import uuid
+
 class Queue:
     def __init__(self, initList: list[Any] = []):
         self.Buffer: list[Any] = initList
@@ -33,6 +35,30 @@ class Message:
     def __str__(self) -> str:
         return PromptFormats[self.Role].format(self.Content)
 
+class PromptState:
+    def __init__(self):
+        self.Messages: list[Message] = []
+        self.ID = str(uuid.uuid4())
+        self.Result: list[str] = []
+    
+    def __str__(self):
+        joined = str()
+
+        for message in self.Messages:
+            joined += f"{str(message)}\n"
+
+        return joined
+
+    def AddMessage(self, message: Message):
+        print(f"Message Added {message}")
+        self.Messages.append(message)
+
+    def AppendResult(self, token: str):
+        self.Result.append(token) 
+
+    def FinalizeCurrentResult(self):
+        self.Messages.append(Message("assistant", str().join(self.Result)))       
+    
 class ReplicateBot:
     def __init__(self, model: str, apiKey: str):
         self.Model = replicate.models.get(model)
@@ -41,20 +67,38 @@ class ReplicateBot:
         self.MessageQueue: Queue = Queue()
         self.Results: list = []
         self.PromptStr: str = ""
-        self.PromptCount: int = 0
+        self.States: list[PromptState] = []
 
     def Prompt(self, message: Message):
         self.MessageQueue.Enqueue(message)
 
-    def FetchTokens(self, url: str):
+    def FetchStreamTokens(self, url: str, callback: Callable):
+        session = requests.Session()
 
-        pass   
+        response = session.get(url, stream=True)
 
+        print(response.content)
+   
     def Run(self):
-        while (not(self.MessageQueue.IsEmpty())):
-            self.PromptStr += str(self.MessageQueue.Dequeue())
-            result = replicate.predictions.create(version=self.ModelVersion, input = {
-                "prompt": self.PromptStr
-            }, stream=True)
+        self.States.append(PromptState())
 
-        asyncio.create_task(self.FetchTokens(self, result.urls["stream"])) 
+        def Callback(token):
+            self.States[-1].AppendResult(token) 
+
+        def DoneCallback(context):
+            self.States[-1].FinalizeCurrentResult()
+            self.PromptStr = str(self.States)
+
+        while (not(self.MessageQueue.IsEmpty())):
+            message = self.MessageQueue.Dequeue()
+
+            self.States[-1].AddMessage(message)
+
+            self.PromptStr += f"{str(message)}\n"
+
+            for event in replicate.stream("meta/llama-2-70b-chat:02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", input = {
+                "prompt": self.PromptStr
+            }, ):
+               Callback(event.data)
+
+            DoneCallback(None)
