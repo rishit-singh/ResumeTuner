@@ -51,13 +51,14 @@ class PromptState:
 
     def AddMessage(self, message: Message):
         print(f"Message Added {message}")
+        self.Result = []
         self.Messages.append(message)
 
     def AppendResult(self, token: str):
         self.Result.append(token) 
 
     def FinalizeCurrentResult(self):
-        self.Messages.append(Message("assistant", str().join(self.Result)))       
+        self.Messages.append(Message("assistant", str().join(self.Result)))
     
 class ReplicateBot:
     def __init__(self, model: str, apiKey: str):
@@ -72,13 +73,6 @@ class ReplicateBot:
     def Prompt(self, message: Message):
         self.MessageQueue.Enqueue(message)
 
-    def FetchStreamTokens(self, url: str, callback: Callable):
-        session = requests.Session()
-
-        response = session.get(url, stream=True)
-
-        print(response.content)
-   
     def Run(self):
         self.States.append(PromptState())
 
@@ -96,7 +90,7 @@ class ReplicateBot:
 
             self.PromptStr += f"{str(message)}\n"
 
-            for event in replicate.stream("meta/llama-2-70b-chat:02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", input = {
+            for event in replicate.stream(self.Model, input = {
                 "prompt": self.PromptStr
             }, ):
                Callback(event.data)

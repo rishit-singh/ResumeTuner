@@ -8,7 +8,7 @@ class ResumeBot:
         self.Bot.Run()
 
     def Tune(self, jobDescription):
-        self.Bot.Prompt(f"Tune and recreate this resume to match this {jobDescription}.")
+        self.Bot.Prompt(f"Tune and recreate this resume to match this {jobDescription}. Output the resume using fancy Markdown. Reply with the Markdown resume only, nothing else, not even a confirmation.")
 
     def Initialize(self, buffer):
         self.Bot.Prompt("You are a resume analyzer. I will provide you a resume in form of text and then a job description. You must analyze and understand the context of the resume. Compare the resume to the job description and give each part of it a score on how relevant it is for the job. Only generate the info when the resume is provided. Respond with OK only if you understand")
