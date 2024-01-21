@@ -3,17 +3,13 @@ import sys
 import json
 import threading
 
+from ResumeBot import ResumeBot
 from ReplicateBot import ReplicateBot, Message
+from PDFExtractor import PDFExtractor
 
-bot = ReplicateBot("mistralai/mixtral-8x7b-instruct-v0.1", os.getenv("REPLICATEKEY"))
+bot = ResumeBot("mistralai/mixtral-8x7b-instruct-v0.1", os.getenv("REPLICATEKEY"))
 
-bot.Prompt(Message("user", sys.argv[1]))
+pdf = PDFExtractor.extract_text_from_pdf(open(sys.argv[1], 'rb').read())
 
-def Main():
-    bot.Run()
+bot.Initialize(pdf)
 
-t = threading.Thread(target=Main)
-t.run()
-
-while (True):
-    print(bot.States[-1].Result)

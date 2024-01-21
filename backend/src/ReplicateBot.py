@@ -83,6 +83,7 @@ class ReplicateBot:
         self.States.append(PromptState())
 
         def Callback(token):
+            print(token, end="")
             self.States[-1].AppendResult(token) 
 
         def DoneCallback(context):
@@ -96,9 +97,9 @@ class ReplicateBot:
 
             self.PromptStr += f"{str(message)}\n"
 
-            for event in replicate.stream("meta/llama-2-70b-chat:02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", input = {
+            for event in replicate.stream(self.Model, input = {
                 "prompt": self.PromptStr
             }, ):
                Callback(event.data)
-
+            print("\n\n")
             DoneCallback(None)
