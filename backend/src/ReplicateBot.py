@@ -58,7 +58,7 @@ class PromptState:
         self.Result.append(token) 
 
     def FinalizeCurrentResult(self):
-        self.Messages.append(Message("assistant", str().join(self.Result)))       
+        self.Messages.append(Message("assistant", str().join(self.Result)))
     
 class ReplicateBot:
     def __init__(self, model: str, apiKey: str):
@@ -73,13 +73,6 @@ class ReplicateBot:
     def Prompt(self, message: Message):
         self.MessageQueue.Enqueue(message)
 
-    def FetchStreamTokens(self, url: str, callback: Callable):
-        session = requests.Session()
-
-        response = session.get(url, stream=True)
-
-        print(response.content)
-   
     def Run(self):
         self.States.append(PromptState())
 

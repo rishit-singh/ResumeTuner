@@ -23,6 +23,8 @@ load_dotenv()
 
 # t = threading.Thread(target=Main)
 # t.run()
+# t = threading.Thread(target=Main)
+# t.run()
 
 # while (True):
 #     print(bot.States[-1].Result)
@@ -31,7 +33,6 @@ load_dotenv()
 bot: ResumeBot = ResumeBot("mistralai/mixtral-8x7b-instruct-v0.1", os.environ["REPLICATE_API_TOKEN"]) 
 
 # bot.Initialize(PDFExtractor.extract_text_from_pdf(open(sys.argv[1], 'rb').read())) # Initialize the llm with the resume
-
 
 async def main():
     config = uvicorn.Config("api:app", host="0.0.0.0", port=8000)

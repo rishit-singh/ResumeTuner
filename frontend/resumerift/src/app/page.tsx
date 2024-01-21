@@ -143,10 +143,10 @@ export default function Index()
                         </Conditional>
                     </div>
                     <div className="flex flex-col w-full h-full justify-center items-center gap-5 mt-10">
-                        <TextareaAutosize minRows={6} cols={70} placeholder="Enter your job description" style={{borderRadius: 5, padding: 10}}
+                        <TextareaAutosize minRows={6} cols={70} placeholder="Enter your job description" style={{borderRadius: 5, padding: 10, resize: "vertical", maxHeight: "300px", minHeight: "200px"}}
                             onChange={(e) => {setJobDescription(e.target.value); console.log(jobDescription);}}/>
                         <Conditional Condition={(() => jobDescription != "" && resumeUploaded)}>
-                            <div className={"flex flex-row"}>
+                            <div className={"flex flex-row gap-3"}>
                             <Conditional Condition={(() => jobDescription != "" && resumeUploaded && formPosted)}>
                                 <Button variant="contained" onClick={async () => { await uploadFile(); await postForm(); }}>
                                     Regenerate

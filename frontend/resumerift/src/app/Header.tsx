@@ -8,7 +8,7 @@ export default function Header() {
   <AppBar position="static" style={{backgroundColor:"#2C363F"}}>
     <Toolbar>
         <Typography variant="h4" style={{ marginRight: 'auto', fontWeight: 'bold', fontFamily: "Jockey One"}}>
-          ResumeRift
+          ResumeTuner
         </Typography>
       </Toolbar>
     </AppBar>); 
