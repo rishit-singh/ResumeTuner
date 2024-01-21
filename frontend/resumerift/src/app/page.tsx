@@ -22,13 +22,12 @@ export default function Index()
     const [path, setPath] = useState("");
 
     const [resumeUploaded, setResumeUploaded] = useState(false);
+
     const [formPosted, setFormPosted] = useState(false);
 
     const [jobDescription, setJobDescription] = useState("");
 
-    const md =`# Your Name\n## Contact Information\n- **Email:** your.email@example.com\n- **Phone:** (555) 123-4567\n- **LinkedIn:** [LinkedIn Profile](https://www.linkedin.com/in/yourname)\n- **GitHub:** [GitHub Profile](https://github.com/yourusername)
-                `; 
-
+    const [md, setMd] = useState(`#### Loading`); 
 
     let id = "";
 
@@ -48,26 +47,63 @@ export default function Index()
         };
         
     const postForm = async () => {
-        const response = await fetch(`http://${process.env.APIURL}/upload/job?id=id`, {
+        const response = await fetch(`http://${process.env.APIURL}/upload/job?id=${id}`, {
             method: "POST",
             mode: "cors",
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({"job_description": jobDescription}) 
         });          
 
         console.log((await response.json())); 
     };
-        
+
+    const downloadTxtFile = () => {
+        const element = document.createElement("a");
+        const file = new Blob([md], {type: 'text/plain'});
+        element.href = URL.createObjectURL(file);
+        element.download = `tunedresume_${Date.now().toString()}.md`;
+        document.body.appendChild(element); // Required for this to work in FireFox
+        element.click();
+      }
+    
+
+    // if (formPosted)
+        useEffect(() => {
+            let interval: NodeJS.Timeout;
+            (async () => {
+                interval = setInterval(async () => {
+                    try{
+                        const result = (await (await fetch(`http://${process.env.APIURL}/job_state?id=id`)).json()).state[0].Result.join("");                
+                        
+                        setMd(result);
+                    }
+                    catch (e)
+                    {
+                    }
+                }, 500)   
+            })();
+
+            return () => {
+                clearInterval(interval);
+            }
+        }, [formPosted])
+
     return (
-        <div className="grid grid-rows-[8vh_92vh]">
+        <div className="grid grid-rows-[8vh_92vh] bg-[#F2F5EA]">
             <Header/>
             <div className="bg-[#F2F5EA]">
-                <div className={"grid grid-cols-2"}>
-                    <div className="flex flex-col w-full h-full justify-center items-center mt-10">
+                <div className={"grid grid-cols-2 bg-[#F2F5EA]"}>
+                    <div className="flex flex-col w-full h-full justify-center items-center mt-10 bg-[#F2F5EA]">
                         <Conditional Condition={() => formPosted}>
-                            <Tabs value={tabView} onChange={(e, val) => setTabView(val)}>
-                                <Tab label="Original" {...tabProps(0)} />
-                                <Tab label="Tuned" {...tabProps(1)} />
-                            </Tabs>
+                           <div className="flex flex-row gap-3"> 
+                                <Tabs value={tabView} onChange={(e, val) => setTabView(val)}>
+                                    <Tab label="Original" {...tabProps(0)} />
+                                    <Tab label="Tuned" {...tabProps(1)} />
+                                </Tabs>
+                                <Button variant="contained" onClick={downloadTxtFile}>Save</Button>
+                            </div>
                         </Conditional>
                         <Conditional Condition={() => !formPosted}>
                             <Tabs value={tabView} onChange={(e, val) => setTabView(val)}>
@@ -108,7 +144,7 @@ export default function Index()
                         <TextareaAutosize minRows={6} cols={70} placeholder="Enter your job description" style={{borderRadius: 5, padding: 10}}
                             onChange={(e) => {setJobDescription(e.target.value); console.log(jobDescription);}}/>
                         <Conditional Condition={(() => jobDescription != "" && resumeUploaded)}>
-                            <Button variant="contained" onClick={async () => { await postForm(); setFormPosted(true); setTabView(1); }}>
+                            <Button variant="contained" onClick={async () => { await postForm(); setFormPosted(true); setTabView(1); console.log(md); }}>
                                 Tune
                             </Button>
                         </Conditional>
