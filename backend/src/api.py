@@ -85,7 +85,7 @@ async def upload_resume(id:str, uploaded_file: UploadFile):
 async def upload_job(id:str, desc: JobDescriptionModel):
     
     # Send job posting to the ReplicateBot thing
-    bot.Tune(job_description)
+    bot.Tune(desc.job_description)
     print("Prompt tuned.")
     
     # run job info
@@ -105,7 +105,7 @@ async def upload_job(id:str, desc: JobDescriptionModel):
     "/job_state",
     description="Get the current text and state for a job position",
 )
-async def job_state(id:str):
+async def job_state(id: str):
     
     # for state in bot.Bot.States:
     #     print(state.Result)

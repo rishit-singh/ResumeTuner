@@ -49,9 +49,9 @@ class PromptState:
 
         return joined
 
-    def AddMessage(self, message: Message):
+    def AddMessage(self, message: Message, ):
         print(f"Message Added {message}")
-        self.Result = []
+        self.Result.clear()
         self.Messages.append(message)
 
     def AppendResult(self, token: str):
@@ -94,5 +94,5 @@ class ReplicateBot:
                 "prompt": self.PromptStr
             }, ):
                Callback(event.data)
-
+ 
             DoneCallback(None)
