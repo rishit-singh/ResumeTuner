@@ -20,7 +20,7 @@ app = FastAPI(
     title="RESUMERIFT",
     description=description,
     redoc_url="/",
-    version=1.0,
+    version="1.0",
     )
 
 origins = [
