@@ -1,20 +1,26 @@
 import json
+import threading
+import uuid
+from typing import Annotated
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
-from main import DB_EXPORT_LOCATION
+from PDFExtractor import PDFExtractor
 
+from main import bot
+#PDFExtractor.extract_text_from_pdf()
 
-description = "Gets course data from the Langara website. Data refreshes hourly. All data belongs to Langara College or BC Transfer Guide and is summarized here in order to help students. Pull requests welcome!"
+description = "A website that helps you create a tailored resume for each and every job posting."
 
 app = FastAPI(
-    title="Langara Courses API.",
+    title="RESUMERIFT",
     description=description,
-    redoc_url="/"
+    redoc_url="/",
+    version=1.0,
     )
 
 origins = [
@@ -31,20 +37,76 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+@app.get(
+    "/test",
+    description="For testing"
+)
+async def test():
+    print(bot)
+    return bot
 
 @app.get(
-    "/courseDB.db", 
-    summary="Returns all courses and transfer agreements.",
-    description="Returns an SQLite database containing all courses and transfer agreements at Langara College."
+    "/get_id",
+    description="Get a unique identier for your API calls.",
+    status_code=200
 )
-async def get_semester_courses():
-    path = "database/LangaraCourseInfoExport.db.gz"
+async def get_id():
+    return uuid.uuid4()
 
-    response = FileResponse(path)
-    response.headers["Content-Encoding"] = "gzip"
+@app.post(
+    "/upload/resume",
+    summary="Uploads a PDF file to server",
+    description="Takes in a PDF file of a resume",
+)
+async def upload_resume(id:str, uploaded_file: UploadFile):
+    
+    print(uploaded_file)
+    
+    # parse pdf to string
+    PDFstring = PDFExtractor.extract_text_from_pdf(uploaded_file.file.read())
+    
+    # send string to ReplicateBot
+    bot.Initialize(PDFstring)
+    
+    # return {"file_size": str(file)}
+    
+    return {
+        "pdfString" : PDFstring
+    }
+    
+        
 
-    return response
+@app.post(
+    "/upload/job",
+    status_code=200
+)
+async def upload_job(id:str, job_description:str):
+    
+    # Send job posting to the ReplicateBot thing
+    bot.Tune(job_description)
+    print("Prompt tuned.")
+    
+    # run job info
+    bot.Run()
+    
+    threading.Thread().run()
+
+@app.get(
+    "/job_state",
+    description="Get the current text and state for a job position",
+)
+async def job_state(id:str):
+    
+    # for state in bot.Bot.States:
+    #     print(state.Result)
+    
+    return {
+        "state" : bot.Bot.States
+    }
+    
+    # HARD TO IMPLEMENT
+    
+    return
 
 # @app.get(
 #     "/{subject}/{course_code}",

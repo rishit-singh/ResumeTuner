@@ -3,6 +3,11 @@ import sys
 import json
 import threading
 import uvicorn
+import asyncio
+
+from ReplicateBot import ReplicateBot, Message
+from ResumeBot import ResumeBot
+from PDFExtractor import PDFExtractor
 
 from dotenv import load_dotenv
 load_dotenv()
