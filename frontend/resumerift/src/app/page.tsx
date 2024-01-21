@@ -6,6 +6,7 @@ import { Button, InputLabel, Tab, Tabs, TextareaAutosize } from "@material-ui/co
 import Conditional from "../../Conditional";
 import PDFViewer from "./PDFViewer";
 import Markdown from "react-markdown";
+import { waitForDebugger } from "inspector";
 
 function tabProps(index: number) {
     return {
@@ -19,7 +20,8 @@ export default function Index()
     const [tabView, setTabView] = useState(0);
 
     const pdfRef = useRef<HTMLInputElement | null>(null);
-    const [path, setPath] = useState("");
+
+    const [path, setPath] = useState<string>("");
 
     const [resumeUploaded, setResumeUploaded] = useState(false);
 
@@ -125,7 +127,7 @@ export default function Index()
                                     <InputLabel>{path}</InputLabel>
                                 </span>
                                 <Button variant="contained" component="label">
-                                    <input type="file" ref={pdfRef} onChange={async () => {
+                                    <input type="file" ref={pdfRef} onChange={async (e) => {
                                             setPath((pdfRef.current?.files as FileList)[0].name);
                                             await uploadFile(); 
                                             setResumeUploaded(true);
@@ -144,9 +146,16 @@ export default function Index()
                         <TextareaAutosize minRows={6} cols={70} placeholder="Enter your job description" style={{borderRadius: 5, padding: 10}}
                             onChange={(e) => {setJobDescription(e.target.value); console.log(jobDescription);}}/>
                         <Conditional Condition={(() => jobDescription != "" && resumeUploaded)}>
+                            <div className={"flex flex-row"}>
+                            <Conditional Condition={(() => jobDescription != "" && resumeUploaded && formPosted)}>
+                                <Button variant="contained" onClick={async () => { await uploadFile(); await postForm(); }}>
+                                    Regenerate
+                                </Button>
+                            </Conditional>
                             <Button variant="contained" onClick={async () => { await postForm(); setFormPosted(true); setTabView(1); console.log(md); }}>
                                 Tune
                             </Button>
+                            </div>
                         </Conditional>
                     </div>
                 </div>

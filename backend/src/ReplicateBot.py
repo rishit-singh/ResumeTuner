@@ -49,8 +49,9 @@ class PromptState:
 
         return joined
 
-    def AddMessage(self, message: Message):
+    def AddMessage(self, message: Message, ):
         print(f"Message Added {message}")
+        self.Result.clear()
         self.Messages.append(message)
 
     def AppendResult(self, token: str):
@@ -96,9 +97,9 @@ class ReplicateBot:
 
             self.PromptStr += f"{str(message)}\n"
 
-            for event in replicate.stream("meta/llama-2-70b-chat:02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", input = {
+            for event in replicate.stream(self.Model, input = {
                 "prompt": self.PromptStr
             }, ):
                Callback(event.data)
-
+ 
             DoneCallback(None)
