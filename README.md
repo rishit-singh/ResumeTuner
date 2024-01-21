@@ -1,4 +1,4 @@
-# ResumeRift
+# ResumeTuner
 An LLM based resume optimizer.
 
 # Why?
