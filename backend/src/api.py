@@ -2,7 +2,7 @@ import json
 import threading
 import uuid
 from typing import Annotated
-
+from pydantic import BaseModel
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
 
@@ -14,13 +14,16 @@ from PDFExtractor import PDFExtractor
 from main import bot
 #PDFExtractor.extract_text_from_pdf()
 
+class JobDescriptionModel(BaseModel):
+    job_description: str
+
 description = "A website that helps you create a tailored resume for each and every job posting."
 
 app = FastAPI(
     title="RESUMERIFT",
     description=description,
     redoc_url="/",
-    version=1.0,
+    version="1.0",
     )
 
 origins = [
@@ -79,7 +82,7 @@ async def upload_resume(id:str, uploaded_file: UploadFile):
     "/upload/job",
     status_code=200
 )
-async def upload_job(id:str, job_description:str):
+async def upload_job(id:str, desc: JobDescriptionModel):
     
     # Send job posting to the ReplicateBot thing
     bot.Tune(job_description)
@@ -88,7 +91,15 @@ async def upload_job(id:str, job_description:str):
     # run job info
     # bot.Run()
     
-    threading.Thread(bot.Run).run()
+    # make thread a daemon so it shuts down when program ends
+    t = threading.Thread(target=bot.Run)
+    t.daemon = True
+    t.start()
+    
+    print("after")
+    
+    return 
+    
 
 @app.get(
     "/job_state",
