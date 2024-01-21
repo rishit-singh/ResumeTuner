@@ -88,7 +88,16 @@ async def upload_job(id:str, job_description:str):
     # run job info
     # bot.Run()
     
-    threading.Thread(bot.Run).run()
+    # make thread a daemon so it shuts down when program ends
+    t = threading.Thread(target=bot.Run)
+    t.daemon = True
+    t.start()
+    
+    print("after")
+    
+    return 
+    
+    
 
 @app.get(
     "/job_state",
