@@ -74,7 +74,6 @@ async def upload_resume(id:str, uploaded_file: UploadFile):
         "pdfString" : PDFstring
     }
     
-        
 
 @app.post(
     "/upload/job",
@@ -87,9 +86,9 @@ async def upload_job(id:str, job_description:str):
     print("Prompt tuned.")
     
     # run job info
-    bot.Run()
+    # bot.Run()
     
-    threading.Thread().run()
+    threading.Thread(bot.Run).run()
 
 @app.get(
     "/job_state",
