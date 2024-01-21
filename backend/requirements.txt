@@ -1,3 +1,5 @@
 requests
 replicate
 
+uvicorn
+python-dotenv
