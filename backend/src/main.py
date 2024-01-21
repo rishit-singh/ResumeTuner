@@ -33,7 +33,6 @@ bot: ResumeBot = ResumeBot("mistralai/mixtral-8x7b-instruct-v0.1", os.environ["R
 
 # bot.Initialize(PDFExtractor.extract_text_from_pdf(open(sys.argv[1], 'rb').read())) # Initialize the llm with the resume
 
-
 async def main():
     config = uvicorn.Config("api:app", host="0.0.0.0", port=8000)
     server = uvicorn.Server(config)
