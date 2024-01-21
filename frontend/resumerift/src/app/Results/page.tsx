@@ -1,6 +1,8 @@
 // pages/results.tsx
+"use client"
 
-import { useState } from 'react';
+
+import React, { useState } from 'react';
 import { Button, Container, CssBaseline, TextField, Typography, makeStyles } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
@@ -26,7 +28,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Results = () => {
+export default function Results()
+{
   const classes = useStyles();
   const [oldResume, setOldResume] = useState('');
   const [newResume, setNewResume] = useState('');
@@ -70,5 +73,3 @@ const Results = () => {
     </>
   );
 };
-
-export default Results;
