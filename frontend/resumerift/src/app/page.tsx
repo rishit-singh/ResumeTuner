@@ -88,78 +88,163 @@ export default function Index()
             })();
 
             return () => {
-                clearInterval(interval);
+                clearInterval(interval); 
             }
         }, [formPosted])
 
-    return (
-        <div className="grid grid-rows-[8vh_92vh] bg-[#F2F5EA]">
-            <Header/>
-            <div className="bg-[#F2F5EA]">
-                <div className={"grid grid-cols-2 bg-[#F2F5EA]"}>
-                    <div className="flex flex-col w-full h-full justify-center items-center mt-10 bg-[#F2F5EA]">
-                        <Conditional Condition={() => formPosted}>
-                           <div className="flex flex-row gap-3"> 
-                                <Tabs value={tabView} onChange={(e, val) => setTabView(val)}>
-                                    <Tab label="Original" {...tabProps(0)} />
-                                    <Tab label="Tuned" {...tabProps(1)} />
-                                </Tabs>
-                                <Button variant="contained" onClick={downloadTxtFile}>Save</Button>
-                            </div>
+        return (
+            <div className="grid grid-rows-[8vh_92vh] bg-[#F2F5EA] p-4">
+              <Header />
+          
+              <div className="bg-[#F2F5EA] mt-4">
+                <div className={"grid grid-cols-2 gap-8 bg-[#F2F5EA]"}>
+                <div className="flex flex-col w-full h-full justify-center items-center bg-[#F2F5EA] mt-4 ml-6">
+                    <Conditional Condition={() => formPosted}>
+                      <div className="flex flex-row gap-3">
+                        <Tabs
+                          value={tabView}
+                          onChange={(e, val) => setTabView(val)}
+                          className="mb-4"
+                        >
+                          <Tab
+                            label="Original"
+                            {...tabProps(0)}
+                            style={{ backgroundColor: "#F2F5EA", fontWeight: "bold" }}
+                          />
+                          <Tab
+                            label="Tuned"
+                            {...tabProps(1)}
+                            style={{ backgroundColor: "#F2F5EA", fontWeight: "bold", marginRight: "50px"}}
+                          />
+                        </Tabs>
+                        <Button
+                          variant="contained"
+                          onClick={downloadTxtFile}
+                          style={{
+                            marginLeft: "auto",
+                            backgroundColor: "#7BB661",
+                            color: "white",
+                            width: "120px", // Adjust the width as needed
+                            height: "30px", // Adjust the height as needed
+                            marginTop: "20px"
+                          }}
+                        >
+                          Save
+                        </Button>
+                      </div>
+                    </Conditional>
+          
+                    <Conditional Condition={() => !formPosted}>
+                      <Tabs
+                        value={tabView}
+                        onChange={(e, val) => setTabView(val)}
+                        className="mb-4"
+                      >
+                        <Tab
+                          label="Original"
+                          {...tabProps(0)}
+                          style={{ backgroundColor: "#F2F5EA", fontWeight: "bold" }}
+                        />
+                      </Tabs>
+                    </Conditional>
+          
+                    <Conditional Condition={() => tabView === 0}>
+                      <div className="mt-4 h-full">
+                        <PDFViewer Path={path} />
+                      </div>
+                      <div className="mt-2 flex flex-row gap-2">
+                        <span className="self-center">
+                          <InputLabel>{path}</InputLabel>
+                        </span>
+                        <Button
+                          variant="contained"
+                          component="label"
+                          style={{ backgroundColor: "#7BB661", color: "white", marginLeft: "20px", marginBottom: "10px" }}
+                        >
+                          <input
+                            type="file"
+                            ref={pdfRef}
+                            onChange={async (e) => {
+                              setPath((pdfRef.current?.files as FileList)[0].name);
+                              await uploadFile();
+                              setResumeUploaded(true);
+                            }}
+                            hidden
+                          />
+                          Select File
+                        </Button>
+                      </div>
+                    </Conditional>
+          
+                    <Conditional Condition={() => tabView === 1}>
+                      <Markdown className={"prose"}>{md}</Markdown>
+                    </Conditional>
+                  </div>
+          
+                  <div className="flex flex-col w-full h-full justify-center items-center gap-5">
+                    <TextareaAutosize
+                      minRows={6}
+                      cols={70}
+                      placeholder="Enter your job description"
+                      style={{
+                        borderRadius: 5,
+                        padding: 10,
+                        backgroundColor: "#F2F5EA",
+                        border: "1px solid #000000", // Add a border
+                        transform: "scale(0.9)", // Scale the textarea to 90% of its original size
+                      }}
+                      onChange={(e) => {
+                        setJobDescription(e.target.value);
+                        console.log(jobDescription);
+                      }}
+                    />
+                    <Conditional
+                      Condition={() => jobDescription !== "" && resumeUploaded}
+                    >
+                      <div className={"flex flex-row gap-2"}>
+                        <Conditional
+                          Condition={() =>
+                            jobDescription !== "" && resumeUploaded && formPosted
+                          }
+                        >
+                          <Button
+                            variant="contained"
+                            onClick={async () => {
+                              await uploadFile();
+                              await postForm();
+                            }}
+                            style={{
+                              backgroundColor: "#7BB661",
+                              color: "white",
+                              marginRight: "8px",
+                            }}
+                          >
+                            Regenerate
+                          </Button>
                         </Conditional>
-                        <Conditional Condition={() => !formPosted}>
-                            <Tabs value={tabView} onChange={(e, val) => setTabView(val)}>
-                                <Tab label="Original" {...tabProps(0)} />
-                            </Tabs>
-                        </Conditional>
-
-                        <Conditional Condition={() => tabView == 0}>
-                            <div className={"mt-1  h-full"}>
-                                <PDFViewer Path={path} />
-                            </div>
-                            <input
-                                type="file"
-                                hidden
-                            />
-
-                            <div className="mt-2 flex flex-row gap-2">
-                                <span className="self-center">
-                                    <InputLabel>{path}</InputLabel>
-                                </span>
-                                <Button variant="contained" component="label">
-                                    <input type="file" ref={pdfRef} onChange={async (e) => {
-                                            setPath((pdfRef.current?.files as FileList)[0].name);
-                                            await uploadFile(); 
-                                            setResumeUploaded(true);
-                                        }} hidden/>Select File
-                                </Button>
-                            </div>
-                        </Conditional>
-
-                        <Conditional Condition={() => tabView == 1}>
-                                <Markdown className={"prose"}>
-                                    {md}
-                                </Markdown>
-                        </Conditional>
-                    </div>
-                    <div className="flex flex-col w-full h-full justify-center items-center gap-5 mt-10">
-                        <TextareaAutosize minRows={6} cols={70} placeholder="Enter your job description" style={{borderRadius: 5, padding: 10}}
-                            onChange={(e) => {setJobDescription(e.target.value); console.log(jobDescription);}}/>
-                        <Conditional Condition={(() => jobDescription != "" && resumeUploaded)}>
-                            <div className={"flex flex-row"}>
-                            <Conditional Condition={(() => jobDescription != "" && resumeUploaded && formPosted)}>
-                                <Button variant="contained" onClick={async () => { await uploadFile(); await postForm(); }}>
-                                    Regenerate
-                                </Button>
-                            </Conditional>
-                            <Button variant="contained" onClick={async () => { await postForm(); setFormPosted(true); setTabView(1); console.log(md); }}>
-                                Tune
-                            </Button>
-                            </div>
-                        </Conditional>
-                    </div>
+                        <Button
+                          variant="contained"
+                          onClick={async () => {
+                            await postForm();
+                            setFormPosted(true);
+                            setTabView(1);
+                            console.log(md);
+                          }}
+                          style={{ backgroundColor: "#7BB661", color: "white" }}
+                        >
+                          Tune
+                        </Button>
+                      </div>
+                    </Conditional>
+                  </div>
                 </div>
+              </div>
             </div>
-        </div>
-    );
+          );
+          
+          
+          
+          
+                  
+        
 } 
