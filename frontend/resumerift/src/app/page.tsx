@@ -8,6 +8,7 @@ import PDFViewer from "./PDFViewer";
 import Markdown from "react-markdown";
 import { Editor } from '@tinymce/tinymce-react';
 import { waitForDebugger } from "inspector";
+const showdown = require("showdown");
 
 function tabProps(index: number) {
     return {
@@ -102,6 +103,9 @@ export default function Index()
             }
         }, [formPosted])
 
+    
+    const converter = new showdown.Converter();
+
     return (
         <div className="grid grid-rows-[8vh_92vh] bg-[#F2F5EA]">
             <Header/>
@@ -114,8 +118,10 @@ export default function Index()
                                     <Tab label="Original" {...tabProps(0)} />
                                     <Tab label="Tuned" {...tabProps(1)} />
                                 </Tabs>
-                                <Button variant="contained" onClick={() => setEdit(true)}>Edit</Button>
-                                <Button variant="contained" onClick={downloadTxtFile}>Save</Button>
+                                <Conditional Condition={() => tabView == 1}>
+                                    <Button variant="contained" onClick={() => setEdit(!edit)}>{(edit) ? "Preview" : "Edit"}</Button>
+                                    <Button variant="contained" onClick={downloadTxtFile}>Save</Button>
+                                </Conditional>
                             </div>
                         </Conditional>
                         <Conditional Condition={() => !formPosted}>
@@ -155,22 +161,22 @@ export default function Index()
                         </Conditional>
 
                         <Conditional Condition={() => tabView == 1 && !edit}>
-                                <Markdown className={"prose"}>
-                                    {md}
-                                </Markdown>
+                            <Markdown className={"prose m-2 flex flex-col gap-1 overflow-y-auto max-h-screen h-[80vh]"}>
+                                {md}
+                            </Markdown>
                         </Conditional>
                         <Conditional Condition={() => tabView == 1 && edit}>
                             <Editor
                                 apiKey="84xd6fx93webor1eyl9thqyjj945c9h2zegivy1fkosco9db"
                                 onInit={(evt, editor) => editorRef.current = editor}
-                                initialValue={md}
+                                initialValue={converter.makeHtml(md)} 
                                 plugins="textpattern"
                                 init={{
                                     height: 500,
                                     menubar: false,
                                     plugins: [
-                                        'advlist autolink lists link image charmap print preview anchor',
-                                        'searchreplace visualblocks code fullscreen',
+                                        'advlist autolink lists link image charmap print preview anchor export ',
+                                        'searchreplace visualblocks code fullscreen textpattern',
                                         'insertdatetime media table paste code help wordcount'
                                     ],
                                     toolbar: 'undo redo | formatselect | ' +
@@ -178,7 +184,6 @@ export default function Index()
                                         'alignright alignjustify | bullist numlist outdent indent | ' +
                                         'removeformat | help',
                                     content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
-                                    plugin: "textpattern",
                                     textpattern_patterns: [
                                         {start: '*', end: '*', format: 'italic'},
                                         {start: '**', end: '**', format: 'bold'},
