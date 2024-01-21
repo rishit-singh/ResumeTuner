@@ -6,6 +6,7 @@ import { Button, InputLabel, Tab, Tabs, TextareaAutosize } from "@material-ui/co
 import Conditional from "../../Conditional";
 import PDFViewer from "./PDFViewer";
 import Markdown from "react-markdown";
+import { Editor } from '@tinymce/tinymce-react';
 import { waitForDebugger } from "inspector";
 
 function tabProps(index: number) {
@@ -31,14 +32,23 @@ export default function Index()
 
     const [md, setMd] = useState(`#### Loading`); 
 
+    const [edit, setEdit] = useState(false); 
+
+    const prevFile = useRef<File>();
+
     let id = "";
+
+    const editorRef = useRef<object>();
 
     const uploadFile =  async () => {
             const formData: FormData = new FormData();
 
             id = await (await fetch(`http://${process.env.APIURL}/get_id`)).text();
 
-            formData.append("uploaded_file", (pdfRef.current?.files as FileList)[0]);
+            if (prevFile.current === undefined)
+                prevFile.current = (pdfRef.current?.files as FileList)[0];
+
+            formData.append("uploaded_file", prevFile.current);
             const response = await fetch(`http://${process.env.APIURL}/upload/resume?id=${id}`, {
                 method: "POST",
                 mode: "cors",
@@ -104,6 +114,7 @@ export default function Index()
                                     <Tab label="Original" {...tabProps(0)} />
                                     <Tab label="Tuned" {...tabProps(1)} />
                                 </Tabs>
+                                <Button variant="contained" onClick={() => setEdit(true)}>Edit</Button>
                                 <Button variant="contained" onClick={downloadTxtFile}>Save</Button>
                             </div>
                         </Conditional>
@@ -114,9 +125,16 @@ export default function Index()
                         </Conditional>
 
                         <Conditional Condition={() => tabView == 0}>
-                            <div className={"mt-1  h-full"}>
-                                <PDFViewer Path={path} />
-                            </div>
+                            <Conditional Condition={() => path != ""}>
+                                <div className={"mt-1  h-full"}>
+                                    <PDFViewer Path={path} />
+                                </div>
+                            </Conditional>
+                            <Conditional Condition={() => path == ""}>
+                                <div className={"mt-1  h-full"}>
+                                    No file selected
+                                </div>
+                            </Conditional>
                             <input
                                 type="file"
                                 hidden
@@ -136,10 +154,46 @@ export default function Index()
                             </div>
                         </Conditional>
 
-                        <Conditional Condition={() => tabView == 1}>
+                        <Conditional Condition={() => tabView == 1 && !edit}>
                                 <Markdown className={"prose"}>
                                     {md}
                                 </Markdown>
+                        </Conditional>
+                        <Conditional Condition={() => tabView == 1 && edit}>
+                            <Editor
+                                apiKey="84xd6fx93webor1eyl9thqyjj945c9h2zegivy1fkosco9db"
+                                onInit={(evt, editor) => editorRef.current = editor}
+                                initialValue={md}
+                                plugins="textpattern"
+                                init={{
+                                    height: 500,
+                                    menubar: false,
+                                    plugins: [
+                                        'advlist autolink lists link image charmap print preview anchor',
+                                        'searchreplace visualblocks code fullscreen',
+                                        'insertdatetime media table paste code help wordcount'
+                                    ],
+                                    toolbar: 'undo redo | formatselect | ' +
+                                        'bold italic backcolor | alignleft aligncenter ' +
+                                        'alignright alignjustify | bullist numlist outdent indent | ' +
+                                        'removeformat | help',
+                                    content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+                                    plugin: "textpattern",
+                                    textpattern_patterns: [
+                                        {start: '*', end: '*', format: 'italic'},
+                                        {start: '**', end: '**', format: 'bold'},
+                                        {start: '#', format: 'h1'},
+                                        {start: '##', format: 'h2'},
+                                        {start: '###', format: 'h3'},
+                                        {start: '####', format: 'h4'},
+                                        {start: '#####', format: 'h5'},
+                                        {start: '######', format: 'h6'},
+                                        {start: '1. ', cmd: 'InsertOrderedList'},
+                                        {start: '* ', cmd: 'InsertUnorderedList'},
+                                        {start: '- ', cmd: 'InsertUnorderedList'}
+                                     ]
+                                }}
+                            />
                         </Conditional>
                     </div>
                     <div className="flex flex-col w-full h-full justify-center items-center gap-5 mt-10">
@@ -147,12 +201,12 @@ export default function Index()
                             onChange={(e) => {setJobDescription(e.target.value); console.log(jobDescription);}}/>
                         <Conditional Condition={(() => jobDescription != "" && resumeUploaded)}>
                             <div className={"flex flex-row gap-3"}>
-                            <Conditional Condition={(() => jobDescription != "" && resumeUploaded && formPosted)}>
-                                <Button variant="contained" onClick={async () => { await uploadFile(); await postForm(); }}>
+                            {/* <Conditional Condition={(() => jobDescription != "" && resumeUploaded && formPosted)}> */}
+                                {/* <Button variant="contained" onClick={async () => { await uploadFile(); await postForm(); }}>
                                     Regenerate
-                                </Button>
-                            </Conditional>
-                            <Button variant="contained" onClick={async () => { await postForm(); setFormPosted(true); setTabView(1); console.log(md); }}>
+                                </Button> */}
+                            {/* </Conditional> */}
+                            <Button variant="contained" onClick={async () => { await postForm(); setEdit(false); setFormPosted(true); setTabView(1); console.log(md); }}>
                                 Tune
                             </Button>
                             </div>
